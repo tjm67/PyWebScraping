@@ -7,7 +7,6 @@ import string
 while(True):
     infoDict = {}
     peRatio = ''
-    strippedList = []
     symbol = input("Enter an NYSE symbol (enter 1 to quit): ")
     if(symbol == '1'):
         break
