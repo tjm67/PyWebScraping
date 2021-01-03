@@ -1,10 +1,13 @@
 from bs4 import BeautifulSoup
 import requests
+import string
 
 #Prompt user to enter NYSE stock symbol and convert it to full URL
 #The program will continually ask the user for symbols after displaying the data
 while(True):
+    infoDict = {}
     peRatio = ''
+    strippedList = []
     symbol = input("Enter an NYSE symbol (enter 1 to quit): ")
     if(symbol == '1'):
         break
@@ -25,10 +28,19 @@ while(True):
     averagePE = soup2.find('div', {'id' : 'current'})
     averagePE = averagePE.text.split('\n')
     averagePE = averagePE[3]
+#Add stock info to a dictionary for easier calling of values.
+    for i in range(len(info)):
+        if (i%2 == 0):
+            info[i] = info[i].text.replace(' ', '')
+            infoDict[info[i]] = None
+        else:
+            infoDict[info[i-1]] = info[i].text
 #Access our table data to find the P/E Ratio for the selected stock
+#Also added error handling here for potential invalid stock symbol input
     try:
         peRatio = info[21].text
 #Quick logic to decide whether P/E Ratio is good or bad (compares it to S&P500 average).
+
         peRatio = peRatio.replace(",","")
         if (float(peRatio) >= (float(averagePE) + 1.5)):
             peRatio = peRatio + ' - Overvalued'
@@ -36,16 +48,16 @@ while(True):
             peRatio = peRatio + ' - Cheap'
         else:
             peRatio = peRatio + ' - Average'
-#Finally, display the information and include some error handling for invalid stock symbols
-#I may need to find a more intuitive way to do this, for now this gets the job done:
+#Finally, display the information.
+#I use dictionaries to make it a little more human-readable
         print()
         print(name.text)
-        print("Previous Close: " + info[1].text)
-        print("Bid Value: " + info[5].text)
-        print("Ask Value: " + info[7].text)
-        print("Average Volume: " + info[13].text)
-        print("Market Cap: " + info[17].text)
-        print("\nP/E Ratio: " + peRatio)
+        print("Previous Close: " + infoDict['PreviousClose'])
+        print("Bid Value: " + infoDict['Bid'])
+        print("Ask Value: " + infoDict['Ask'])
+        print("Average Volume: " + infoDict['Avg.Volume'])
+        print("Market Cap: " + infoDict['MarketCap'])
+        print("\nP/E Ratio: " + peRatio + "\nAverage PE Ratio is: " + averagePE)
     except Exception:
         print('You must enter a valid symbol!' + '\n')
     print('\n')
