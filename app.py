@@ -7,12 +7,11 @@ import string
 while(True):
     infoDict = {}
     peRatio = ''
-    strippedList = []
     symbol = input("Enter an NYSE symbol (enter 1 to quit): ")
     if(symbol == '1'):
         break
 
-    url = 'https://finance.yahoo.com/quote/{0}/'.format(symbol)
+    url = 'https://finance.yahoo.com/quote/{0}'.format(symbol)
     url2 = 'https://www.multpl.com/s-p-500-pe-ratio'
 #Get the source codes using requests
     source = requests.get(url).text
@@ -35,21 +34,11 @@ while(True):
             infoDict[info[i]] = None
         else:
             infoDict[info[i-1]] = info[i].text
-#Access our table data to find the P/E Ratio for the selected stock
-#Also added error handling here for potential invalid stock symbol input
-    try:
-        peRatio = info[21].text
-#Quick logic to decide whether P/E Ratio is good or bad (compares it to S&P500 average).
-
-        peRatio = peRatio.replace(",","")
-        if (float(peRatio) >= (float(averagePE) + 1.5)):
-            peRatio = peRatio + ' - Overvalued'
-        elif (float(peRatio) <= (float(averagePE) - 1.5)):
-            peRatio = peRatio + ' - Cheap'
-        else:
-            peRatio = peRatio + ' - Average'
+#Access the dictionary to find the P/E Ratio for the selected stock
+    peRatio = infoDict['PERatio(TTM)'].replace(',','')
 #Finally, display the information.
 #I use dictionaries to make it a little more human-readable
+    try:
         print()
         print(name.text)
         print("Previous Close: " + infoDict['PreviousClose'])
@@ -59,5 +48,16 @@ while(True):
         print("Market Cap: " + infoDict['MarketCap'])
         print("\nP/E Ratio: " + peRatio + "\nAverage PE Ratio is: " + averagePE)
     except Exception:
-        print('You must enter a valid symbol!' + '\n')
+        print('You must enter a valid symbol!\n')
+#Also added error handling here for potential 'N/A' P/E Ratios
+    try:
+#Quick logic to decide whether P/E Ratio is good or bad (compares it to S&P500 average).
+        if (float(peRatio) >= (float(averagePE) + 1.5)):
+            peRatio = peRatio + ' - Overvalued'
+        elif (float(peRatio) <= (float(averagePE) - 1.5)):
+            peRatio = peRatio + ' - Cheap'
+        else:
+            peRatio = peRatio + ' - Average'
+    except Exception:
+        print('No PE Ratio given.\n')
     print('\n')
